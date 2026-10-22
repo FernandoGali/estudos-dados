@@ -2,9 +2,15 @@
 
 ## Tópico 1: O que é análise de dados
 
-### Teoria nas minhas palavras
+Dado sem análise não traz benefício nenhum. Pelo contrário: é custo para a empresa, com banco de dados e/ou com pessoas que o extraem todos os dias. Ele só gera valor quando sobe os degraus até virar decisão:
 
-> Escreva aqui, sem copiar, o que você entendeu: a diferença entre dado, informação, conhecimento e decisão (pirâmide DIKW), e o que um analista entrega. Use um exemplo da esmagadora.
+- Dado: o registro bruto. Ex.: turno III, 20/09, residual do farelo 0,71%.
+- Informação: o dado comparado. Ex.: o residual médio do ano está em 0,82%, contra uma meta de 0,60%.
+- Conhecimento: o porquê. Ex.: o turno III fica sempre acima dos outros.
+- Decisão: a ação. Ex.: revisar o procedimento do extrator no turno III.
+
+Na indústria de soja, não adianta olhar os indicadores todo turno sem agir, porque eles não vão se enquadrar sozinhos. O analista entrega relatórios do que aconteceu, análises do porquê e recomendações com impacto em número, para que a decisão seja mais assertiva.
+
 
 ### Prática: 3 decisões reais
 
@@ -29,6 +35,5 @@
 - **Problema no dado:** o consumo de solvente e o residual no farelo também saem em D-1. Cada ajuste nos pratos do DT só podia ser avaliado no dia seguinte, o que tornava o ciclo de teste lento.
 - **Resultado:** o residual e o consumo de solvente ficaram dentro das metas, com o consumo caindo de cerca de 1,8 L/t para cerca de 1 L/t.
 
-### O que aprendi
 
-> Uma ou duas frases: o que essas três decisões têm em comum do ponto de vista de dados?
+Nas três decisões, o dado existia, mas chegava atrasado (D-1 ou laboratório externo) e espalhado em fontes diferentes (boletim, SAP e laboratório). Por isso, cada ajuste demorava a ser confirmado. Aprendi que achar o ponto fora da curva é só o começo: o valor está em entender o porquê, propor a ação e ter o dado rápido para ser validado.
