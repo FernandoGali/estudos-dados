@@ -2,7 +2,7 @@
 
 Caderno de estudos da minha transição de Engenharia de Produção para Análise de Dados, com foco em Operações e Supply Chain da agroindústria.
 
-Aqui ficam anotações, exercícios e rascunhos do dia a dia. Os projetos finalizados estão no meu portfólio: [portfolio-dados](https://github.com/SEU_USUARIO/portfolio-dados).
+Aqui ficam anotações, exercícios e rascunhos do dia a dia. Os projetos finalizados estão no meu portfólio: [portfolio-dados](https://github.com/FernandoGali/portifolio-dados).
 
 ## Roadmap
 
