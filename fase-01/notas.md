@@ -78,3 +78,46 @@ Em dias com baixa produção, o índice de insumos fica elevado, pois existe um 
 A média simples dá o mesmo peso para dias com carga baixa e dias com carga total. A média ponderada é o índice real do período e é a que vai para o KPI e para o custo.
 
 Os dias ruins não somem: eles aparecem na coluna do índice diário, que serve de alerta para investigação. E quando a média simples fica bem acima da ponderada, isso já sinaliza que os dias de baixa produção estão puxando o consumo para cima.
+
+## Tópico 3: Análise diagnóstica
+
+Caso investigado: hexano de 1,66 L/t no dia 24/11/2022, com a fábrica cheia. Planilha de apoio: `investigacao_hexano_24-11-2022.xlsx`.
+
+### Parte A: árvore de hipóteses (4M + Medida)
+
+| Categoria | Hipótese | Dado que confirmaria ou descartaria | Existe na base? |
+|---|---|---|---|
+| Matéria-prima | Entrada de grão muito seco no processo | Umidade da soja industrializada no dia 24/11 comparada com os dias anteriores | Sim |
+| Mão de obra | A impureza muda a densidade da massa e gera variação de carga; sem treinamento, o operador não ajusta o equipamento | Impureza da soja industrializada; comparação entre turnos; equipe do turno | Em parte |
+| Método | Alta velocidade na rosca de descarga do DT | Velocidade de rotação da rosca; residual de solvente no farelo | Não |
+| Máquina | Ejetor da destilaria entupido ou com passagem de ar | Tendência do índice nos dias anteriores; medidor de vácuo; ordem de manutenção | Em parte |
+| Medida | PT100 da cabeça do DT descalibrado, lendo acima do real; com o DT frio, o solvente não recuperado sai no farelo | Aferição do PT100; cronograma de calibração | Não |
+
+### Parte B: teste com os dados
+
+| Hipótese | Resultado | Evidência |
+|---|---|---|
+| Grão muito seco | Descartada | Umidade de 10,35% no dia 24/11, dentro da faixa de 10,07% a 10,90% dos dias 20 a 23/11 |
+| Impureza e variação de carga | Descartada | Impureza de 1,03% no dia 24/11, uma das menores da semana (0,90% a 1,31%). Um fator que não mudou no dia 24 não explica um pico que só aparece nele |
+| Ejetor entupido | Fortalecida | Índice subindo dia a dia de 1,18 L/t (20/11) para 1,66 L/t (24/11), depois de 15 dias de fábrica parada; queda para 1,37 e 1,31 L/t após a preventiva de 25/11 |
+| Velocidade da rosca do DT | Não testável | A base não tem velocidade da rosca nem residual de solvente no farelo |
+| PT100 descalibrado | Não testável | A base não tem temperatura do DT nem histórico de calibração |
+
+Outras observações:
+- O dia 19/11 também teve índice alto (1,59 L/t), mas foi dia de partida (14,5 h rodando), o que explica o valor.
+- No dia 24/11, o residual de óleo no farelo foi de 0,75% no turno III, contra 0,62% no turno I e 0,61% no turno II.
+- A quebra de corrente do dia 25/11 foi na RSC-01 (rosca transportadora de farelo), sem relação com a recuperação de solvente.
+
+### Parte C: conclusão sobre o dia 24/11/2022
+
+**Problema:** hexano de 1,66 L/t no dia 24/11, com a fábrica rodando 24 h (1.507 t), contra 1,18 a 1,25 L/t nos outros dias cheios da campanha.
+
+**Descartado:** umidade do grão (10,35%, dentro da faixa de 10,07% a 10,90% dos dias anteriores) e impureza (1,03%, uma das menores da semana). Um fator que não mudou no dia 24 não explica um pico que só aparece nele.
+
+**Mais provável (fortalecida, não confirmada):** entupimento progressivo do ejetor da destilaria. A fábrica ficou parada de 04 a 18/11, o que favorece o entupimento. Depois da partida, o índice subiu dia a dia de 1,18 L/t (20/11) para 1,66 L/t (24/11). Após a manutenção preventiva de 25/11, caiu para 1,37 e 1,31 L/t, o que sugere que o ejetor pode ter sido limpo nessa parada.
+
+**Não testado:** PT100 da cabeça do DT e velocidade da rosca de descarga. A base não tem esses dados, então essas hipóteses continuam abertas.
+
+**Para confirmar, eu pediria:**
+- Ordem de manutenção da preventiva de 25/11 (SAP PM, Manutenção)
+- Histórico do vácuo da destilaria de 19 a 27/11 (supervisório, Operação)
