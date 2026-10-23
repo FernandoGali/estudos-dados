@@ -56,16 +56,16 @@ Nas três decisões, o dado existia, mas chegava atrasado (D-1 ou laboratório e
 
 | Índice | Média simples | Média ponderada |
 |---|---|---|
-| Vapor (kg/t) | 292,96 | 281,00 |
-| Hexano (L/t) | 1,66 | 1,57 |
+| Vapor (kg/t) | 270,56 | 268,61 |
+| Hexano (L/t) | 1,393 | 1,369 |
 
-A média simples infla o vapor em cerca de 4% e o hexano em cerca de 6%.
+A média simples infla o vapor em cerca de 0,73% e o hexano em cerca de 1,75%.
 
 **O que observei**
 
-Nos 3 dias de menor produção (entre 99 e 239 t), o vapor ficou entre 293 e 378 kg/t e o hexano em torno de 1,7 L/t. Nos 3 dias de maior produção (entre 990 e 1.450 t), o vapor ficou entre 243 e 271 kg/t e o hexano entre 1,26 e 1,31 L/t, com uma exceção: no dia 03/11 o hexano chegou a 1,56 L/t mesmo com a fábrica cheia, o que aponta para uma causa de processo e não de carga.
+Nos 3 dias de menor produção (entre 573 e 990 t), o vapor ficou entre 271 e 294 kg/t e o hexano entre 1,56 e 1,62 L/t. Nos 3 dias de maior produção (entre 1.478 e 1.570 t), o vapor ficou entre 248 e 267 kg/t e o hexano entre 1,18 e 1,25 L/t, com uma exceção: no dia 24/11 o hexano chegou a 1,66 L/t mesmo com a fábrica cheia, o que aponta para uma causa de processo e não de carga. Outra exceção: no dia 26/11, com 1.431 t, o vapor chegou a 312 kg/t, o maior do mês.
 
-Ou seja, nos dias com uma produção mais baixa, temos um consumo maior por tonelada, e isso pode ser por vários fatores: insumos necessários para rodar a planta, qualidade ruim de matéria-prima ou problemas de processo.
+Ou seja, nos dias com produção mais baixa, temos um consumo maior por tonelada, e isso pode ser por vários fatores: insumos necessários para rodar a planta, qualidade ruim de matéria-prima ou problemas de processo. Como a fábrica opera cheia na maior parte dos dias, a média simples infla pouco o índice do mês (0,73% no vapor e 1,75% no hexano). Ela só distorce de verdade em meses com muitas partidas e paradas.
 
 O ideal de uma planta é o equilíbrio entre produção e consumo: achar o sweet spot em que se tem um maior rendimento a um baixo custo, sem ocasionar quebras ou paradas.
 
