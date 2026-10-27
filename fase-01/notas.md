@@ -121,3 +121,53 @@ Outras observações:
 **Para confirmar, eu pediria:**
 - Ordem de manutenção da preventiva de 25/11 (SAP PM, Manutenção)
 - Histórico do vácuo da destilaria de 19 a 27/11 (supervisório, Operação)
+
+## Tópico 4: Análise preditiva
+
+### Parte A: o que vale prever numa esmagadora
+
+| O que prever | Decisão que apoia | Dados necessários | O SAP faz? |
+|---|---|---|---|
+| Quanto óleo vamos vender no mês? Quanto precisaremos produzir? | Programação de produção e manutenção | Histórico de vendas, contratos já fechados e sazonalidade | Registra as vendas, mas a previsão depende de extrair e analisar os dados |
+| Por quantos dias o estoque de enzima dura com a produção cheia? | Reabastecimento de enzimas | Estoque atual, dosagem por tonelada de óleo, produção programada e lead time do fornecedor | A lista técnica tem o consumo teórico, mas os apontamentos são manuais; serve para o aprovisionamento e para checar se há estoque para produzir, não para prever o consumo real |
+| A soja comprada, somada ao estoque, vai ser suficiente para rodar o mês todo? Se não, quando vamos parar? | Programação de produção e manutenção | Recebimento diário, estoque, esmagamento programado e compras já contratadas | Recebe as informações, mas não projeta a data em que a soja acaba; isso só aparece ao criar a ordem de produção |
+
+### Parte B: previsão da parada de novembro de 2022, feita em 24/10/2022
+
+Usando só os dados disponíveis até 24/10/2022 (premissa: o silo precisa de no mínimo 300 t para operar):
+
+| Dado | Valor |
+|---|---|
+| Estoque de soja no fechamento de 24/10 | 9.240,72 t |
+| Esmagamento médio de 18 a 24/10 | 1.438,51 t/dia |
+| Recebimento líquido médio de 18 a 24/10 (peso líquido 3.118,22 t − desconto 33,59 t, dividido por 7) | 440,66 t/dia |
+
+| Previsão | Conta | Dias | Data em que a soja acaba |
+|---|---|---|---|
+| Ingênua (sem recebimento) | (9.240,72 − 300) ÷ 1.438,51 | 6,21 | 30/10 |
+| Com recebimento | (9.240,72 − 300) ÷ (1.438,51 − 440,66) | 8,96 | Fim de 01/11 |
+
+**O que aconteceu de fato:** a última operação foi no dia 03/11, com carga parcial (990 t). A fábrica parou no dia 04/11.
+
+| Previsão | Erro |
+|---|---|
+| Ingênua | Cerca de 4 dias cedo, porque ignorou a soja que continuou chegando |
+| Com recebimento | Cerca de 1 a 1,5 dia cedo |
+
+**Por que a previsão com recebimento errou para mais cedo:** ela usou médias, e os dias seguintes foram diferentes da média. No dia 26/10, uma parada fez a fábrica esmagar só 882 t, sobrando cerca de 550 t de soja no silo. No dia 03/11, chegaram mais de 1.000 t, o dobro da média. As duas coisas empurraram a parada para mais tarde. Por isso, na prática, a previsão é refeita todo dia com o dado novo.
+
+### Parte C: limites e uso
+
+**O que poderia fazer a previsão errar**
+- O recebimento dos próximos dias ser diferente da média (chuva, fim de semana, atraso de contrato ou pico de entrega)
+- Uma quebra inesperada de equipamento, que reduz o esmagamento (como no dia 26/10)
+- O armazém de farelo encher antes: a fábrica para por falta de espaço mesmo com soja no silo. A previsão olha uma restrição só, e a fábrica tem várias
+
+**O que eu faria no PCP no dia 24/10, sabendo que a soja acaba por volta de 02/11**
+- Acionar a manutenção para usar a parada nas manutenções pendentes
+- Organizar a compra de insumos, para que os estoques estejam prontos na retomada
+- Se houver entregas de produto acabado pendentes, avisar o comercial sobre a necessidade de compra de soja
+
+A previsão transforma uma parada imprevista numa janela planejada. Com 9 dias de antecedência, dá para abrir as ordens no SAP PM, separar peças e escalar equipes.
+
+**Bônus: quando a fábrica volta.** Com a regra de retomar só com soja para 5 dias de operação (cerca de 7.300 t, mais as 300 t mínimas) e um recebimento de cerca de 440 t/dia, a conta dá por volta de 15 a 17 dias parada. Na base, a fábrica ficou parada de 04 a 18/11 (15 dias). Isso diz à manutenção quanto tempo ela tem, e não só quando a parada começa.
