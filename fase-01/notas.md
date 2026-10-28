@@ -171,3 +171,77 @@ Usando só os dados disponíveis até 24/10/2022 (premissa: o silo precisa de no
 A previsão transforma uma parada imprevista numa janela planejada. Com 9 dias de antecedência, dá para abrir as ordens no SAP PM, separar peças e escalar equipes.
 
 **Bônus: quando a fábrica volta.** Com a regra de retomar só com soja para 5 dias de operação (cerca de 7.300 t, mais as 300 t mínimas) e um recebimento de cerca de 440 t/dia, a conta dá por volta de 15 a 17 dias parada. Na base, a fábrica ficou parada de 04 a 18/11 (15 dias). Isso diz à manutenção quanto tempo ela tem, e não só quando a parada começa.
+
+## Tópico 5: Análise prescritiva
+
+### Parte A: quanto vale reduzir o óleo no farelo final
+
+**Contexto:** a fábrica produz 30.000 t de farelo por mês. A goma separada na degomagem volta para o farelo e leva óleo junto. Na degomagem enzimática, as enzimas convertem parte da goma em óleo, então a goma carrega menos óleo e o incremento de óleo no farelo final diminui em relação à degomagem aquosa. A pergunta é: quanto vale, em toneladas e em reais, essa redução?
+
+**Simplificação adotada:** na prática, o óleo do farelo final depende do LEX (óleo no farelo branco, na saída do extrator), do Fator DT (que concentra o teor de óleo ao evaporar o hexano) e do que é adicionado ao farelo depois (casca, goma). Para este estudo, considerei a variação direto no óleo do farelo final.
+
+**Premissas**
+
+| Premissa | Valor | Origem |
+|---|---|---|
+| Produção de farelo | 30.000 t/mês | Premissa do exercício |
+| Óleo no farelo final, degomagem aquosa | 2,0 a 2,5% (ponto médio 2,25%) | Experiência de fábrica |
+| Óleo no farelo final, degomagem enzimática | 1,0 a 1,5% (ponto médio 1,25%) | Experiência de fábrica |
+| Preço do óleo degomado | R$ 7.941,38 /t | Cotação de Chicago (CBOT) convertida para R$/t em 27/10/2026, com o câmbio do dia |
+| Preço do farelo | R$ 2.082,38 /t | Cotação de Chicago (CBOT) convertida para R$/t em 27/10/2026, com o câmbio do dia (farelo cotado em short ton) |
+
+**Conta (pontos médios)**
+
+- Óleo recuperado por mês = 30.000 t × (2,25% − 1,25%) = **300 t/mês**
+- Valor bruto por mês = 300 t × R$ 7.941,38 = R$ 2.382.414,00
+- Ganho real por mês = 300 t × (R$ 7.941,38 − R$ 2.082,38) = **R$ 1.757.700,00**
+
+**Óleo x farelo:** o óleo recuperado deixa de ser vendido dentro do farelo, como farelo. Por isso o ganho real é a diferença entre os dois preços, e não o preço cheio do óleo. Usar o valor bruto superestimaria o ganho em cerca de R$ 625 mil por mês.
+
+**Cenários**
+
+| Cenário | Redução do teor | Óleo recuperado | Ganho por mês |
+|---|---|---|---|
+| Pessimista (2,0% → 1,5%) | 0,5 p.p. | 150 t | R$ 878.850,00 |
+| Médio (2,25% → 1,25%) | 1,0 p.p. | 300 t | R$ 1.757.700,00 |
+| Otimista (2,5% → 1,0%) | 1,5 p.p. | 450 t | R$ 2.636.550,00 |
+
+**Por ano:** com 12 meses de operação, R$ 21,09 milhões. Como a fábrica opera em campanha e para na entressafra e por falta de matéria-prima, uma estimativa mais honesta usa cerca de 10 meses: **R$ 17,58 milhões por ano** no cenário médio.
+
+**Limites da conta:** é ganho bruto. Para ser o ganho líquido, falta descontar o custo da enzima e dos reagentes da degomagem enzimática, e o investimento, se houver. Também depende de o farelo continuar dentro da especificação comercial.
+
+### Parte B: o que fazer com a parada de novembro de 2022
+
+Cenário: em 24/10/2022, a previsão do Tópico 4 diz que a soja acaba por volta de 02/11 e a fábrica deve ficar parada cerca de 15 dias. Planilha: `topico5_parteB_parada_nov2022.xlsx`.
+
+| Opção | Ganho | Custo ou risco |
+|---|---|---|
+| 1. Aceitar a parada e usá-la para a preventiva e as manutenções pendentes | Antecipa manutenções obrigatórias (extração) com a fábrica parada | 15 dias sem produzir: cerca de 4.300 t de óleo e 15.600 t de farelo a menos |
+| 2. Comprar soja no mercado à vista para não parar | Mantém a produção. A parada seria por falta de matéria-prima e há armazém disponível | Soja à vista mais cara que a contratada; logística de cerca de 27 caminhões a mais por dia; adiar manutenção pode agravar problemas e gerar uma parada maior depois |
+| 3. Reduzir a carga para o estoque durar mais | Estende os dias de operação | Só adia a parada (cerca de 16 dias em vez de 9 a 1.000 t/dia). Abaixo da carga nominal, o consumo de vapor, energia e hexano por tonelada sobe |
+
+**Soja necessária para não parar em 15 dias (opção 2):** (1.438,51 − 440,66) t/dia × 15 dias = **14.967,75 t**, cerca de 405 caminhões de 37 t, ou cerca de 27 caminhões por dia além do normal.
+
+**Regra de decisão:** a opção 2 é melhor para o faturamento se as pendências de manutenção forem só preventivas. Se houver manutenção crítica (risco de quebra, risco de segurança ou perda de rendimento em andamento), a opção 1 é melhor. A opção 3 não resolve: só adia a parada e encarece a produção.
+
+**O que decide:** a lista de ordens de manutenção pendentes com a criticidade (SAP PM) e a cotação da soja à vista comparada com a margem de esmagamento.
+
+### Parte C: recomendação
+
+E-mail ao gerente industrial:
+
+> **Assunto:** Estoque de soja acaba em 02/11, decisão até 27/10
+>
+> No ritmo atual (cerca de 1.440 t/dia esmagadas e 440 t/dia recebidas), a soja acaba por volta de 02/11 e a fábrica para cerca de 15 dias.
+> Temos três opções: (1) parar e antecipar a manutenção; (2) comprar cerca de 15.000 t de soja à vista e não parar; (3) reduzir a carga, o que só adia a parada (cerca de 16 dias em vez de 9).
+> Parar significa deixar de produzir cerca de 4.300 t de óleo e 15.600 t de farelo. Não parar exige pagar o valor da soja à vista e receber cerca de 27 caminhões a mais por dia.
+> Recomendo a opção 2, desde que não haja manutenção crítica pendente. Se houver, a opção 1.
+> Para fechar a decisão, preciso até 27/10 da lista de ordens de manutenção pendentes com a criticidade (Manutenção) e da cotação da soja à vista (Originação). Se seguirmos a opção 2, acompanho diariamente os dias de estoque e os caminhões recebidos.
+
+| Parte | Onde está no e-mail |
+|---|---|
+| Situação | Linha 1: quando a soja acaba e quanto tempo a fábrica para |
+| Opções | Linha 2 |
+| Impacto | Linha 3: o que se perde parando e o que custa não parar |
+| Recomendação | Linha 4: regra de decisão condicional |
+| Como acompanhar | Linha 5: quem entrega o quê, até quando, e o indicador diário |
