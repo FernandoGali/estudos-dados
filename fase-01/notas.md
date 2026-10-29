@@ -245,3 +245,88 @@ E-mail ao gerente industrial:
 | Impacto | Linha 3: o que se perde parando e o que custa não parar |
 | Recomendação | Linha 4: regra de decisão condicional |
 | Como acompanhar | Linha 5: quem entrega o quê, até quando, e o indicador diário |
+
+## Tópico 6: O ciclo do dado
+
+**Teoria:** toda análise passa por seis etapas em ciclo: pergunta, coleta, limpeza, exploração, visualização e comunicação. A decisão gera novas perguntas e o ciclo recomeça. O ciclo é tão bom quanto a etapa mais fraca, e a coleta quase sempre acontece longe do analista (turno, balança, laboratório).
+
+### Parte A: paralelo com PDCA e DMAIC
+
+| Ciclo do dado | PDCA (aplicado ao problema da fábrica) | DMAIC |
+|---|---|---|
+| Pergunta | Plan | Define |
+| Coleta | Plan | Measure |
+| Limpeza | Plan | Measure (validar o sistema de medição, como no MSA) |
+| Exploração | Plan | Analyze |
+| Visualização | Plan e Check | Analyze e Control |
+| Comunicação | Plan, passando para o Do | Fim do Analyze, passando para o Improve |
+| (sem equivalente: quem age é a operação) | Do | Improve |
+| Medir de novo | Check e Act | Control |
+
+**Outra lente:** aplicando o PDCA ao próprio trabalho de análise, fica: Plan = definir as perguntas; Do = coletar, limpar e explorar; Check = conferir os indicadores no painel; Act = comunicar insights e alertas. As duas leituras são válidas; numa entrevista, dizer qual lente estou usando.
+
+**Qual etapa do DMAIC não tem equivalente:** o Improve. O analista não executa a melhoria, ele a recomenda. Se o gestor recebe o alerta de que um equipamento tende a quebrar e ninguém age, a análise não gerou valor e o problema volta a aparecer nos dados. Por isso a entrega precisa dizer o que fazer, quem faz e até quando, e trazer o indicador que vai mostrar, no Control, se a ação funcionou.
+
+**Limpeza é o meu Measure:** antes de analisar, garanto que o dado mede o que diz medir.
+
+### Parte B: o ciclo do boletim diário de uma esmagadora
+
+| Etapa | Quem faz | Quando | Ferramenta | Onde dá erro ou atraso |
+|---|---|---|---|---|
+| 1. Medição e registro no setor | Operadores e líderes | Durante o turno | Boletins dos setores, medidores, balança | Medidor descalibrado; leitura anotada errada |
+| 2. Coleta e lançamento (produção, manutenção, utilidades) | Encarregados, com o PCM na manutenção | Fim do turno | SAP | Digitação errada, campo em branco, atraso por o dado chegar tarde ou por demora no lançamento |
+| 3. Lançamento da qualidade | Analistas do laboratório | Fim do turno | SAP | Amostra irregular, erro de análise, atraso no início; resultado lançado depois, com o dia já fechado |
+| 4. Conferência | Coordenador de cada área | Após o lançamento | SAP | Conferência manual: depende de quem confere perceber o erro |
+| 5. Distribuição | Analistas e líderes | Fim do turno | Visita ao setor, e-mail, boletim impresso | Três canais, sem uma versão única |
+| 6. Decisão | Coordenadores e gerência | Quando necessário | Reunião ou conversa | Sem gatilho definido: a decisão depende de alguém notar |
+
+**Fontes de cada variável:** produção (medidores, balança, medição de tanque de hexano), manutenção (controle de paradas por motivo), utilidades (medidor de vazão de vapor, substação), qualidade (laboratório). Três tipos de falha na origem: medição (instrumento descalibrado), registro (apontamento) e amostragem/análise (laboratório). Categoria "outras paradas" genérica demais: o dado existe, mas não serve para análise.
+
+### Parte C: os 2 pontos onde o ciclo mais falha
+
+**1. Resultado do laboratório que chega depois do fechamento.** O dia fecha sem a análise e é corrigido depois; quem consulta antes vê um dado incompleto.
+- Solução rápida (indicador e processo): marcar o dado como provisório até o laboratório lançar e acompanhar a pontualidade (% de análises lançadas até o fim do turno).
+- Solução estrutural (sistema e automação): NIR em linha para umidade, proteína e óleo, calibrado contra o laboratório. Reduz a quantidade de análises manuais e dá o dado em tempo real.
+
+**2. Consumo de hexano medido à mão no tanque.** É o índice mais caro e o mais exposto a erro de leitura; a diferença de nível entre leituras mistura períodos.
+- Solução rápida (do analista, com o dado que já existe): conciliação mensal com as compras. Hexano comprado − variação do estoque do tanque = hexano consumido de fato. Se a soma dos consumos lançados no mês for muito diferente desse número, a medição diária tem erro sistemático. Usa uma fonte independente (notas de compra) e não depende de o encarregado conferir nada. No dia a dia, o analista marca no próprio relatório os dias fora do padrão (carta de controle do índice), em vez de pedir conferência no lançamento.
+- Por que não um alerta no lançamento: o encarregado confia na própria medição ("faço isso todo dia") e lança mesmo assim. Solução que exige mudança de rotina sem ganho para quem executa costuma falhar.
+- Solução estrutural (instrumentação): medidor de vazão na reposição de hexano, com leitura automática no sistema. Mais acurácia e menos risco da medição manual.
+
+**Lição:** propor uma solução para amanhã, com o dado que já existe, e uma para o ano que vem, com investimento.
+
+## Tópico 7: A pergunta de negócio
+
+**Teoria:** pergunta boa é específica (o quê, onde, quando), mensurável (dá para responder com um número a partir de dados que existem) e ligada a uma decisão. Teste: "se a resposta for X, faremos A; se for Y, faremos B". Se não dá para completar a frase, a pergunta não está pronta. O gestor quase sempre chega com a pergunta vaga; transformá-la é trabalho do analista ("para decidir o quê?", "comparado com o quê?", "em que período?").
+
+**Armadilhas que cometi e corrigi:**
+- A média esconde o que está fora da especificação: perguntar também o % fora do padrão
+- A média de todos esconde o indivíduo: fornecedor ruim some no meio de 160
+- Consumo total engana: comparar por tonelada (kWh/t), não em absoluto
+- "Muito acima" não é mensurável: definir o limite
+- Comparar só com o mês passado é fraco: usar a meta como gatilho e o ano anterior como contexto
+- Citar colunas pelo nome, não pela letra da planilha
+
+### 1. "Como está a qualidade do farelo?"
+
+**Pergunta:** no último mês, qual a proteína média do farelo e qual o % de análises abaixo de 46%, por turno?
+
+**Decisão:** se a média estiver acima de 46,3% e quase nenhuma análise abaixo, aumentamos a adição de casca (estamos entregando proteína de graça). Se mais de 5% das análises estiverem abaixo, reduzimos a casca e investigamos o turno com mais desvios.
+
+**Dados:** `fato_lab_farelo` (`proteina_pct`, `turno`, `data`).
+
+### 2. "Os fornecedores estão bons?"
+
+**Pergunta:** entre os fornecedores que somam 80% do volume em 2026, quais têm o maior % de desconto de classificação (`desconto_t` ÷ `peso_liquido_t`)?
+
+**Decisão:** se um fornecedor grande estiver muito acima da média, a originação negocia a qualidade na renovação do contrato. Se for um fornecedor pequeno, ele perde prioridade nas compras. Trocar um fornecedor grande sem olhar o volume pode faltar soja.
+
+**Dados:** `fato_recebimento` (`id_fornecedor`, `peso_liquido_t`, `desconto_t`, `umidade_pct`, `impureza_pct`) + `dim_fornecedor`.
+
+### 3. "Estamos gastando muita energia?"
+
+**Pergunta:** qual foi o consumo de energia por tonelada esmagada (kWh/t) em outubro de 2026, quanto % acima ou abaixo da meta, e como se compara a outubro de 2025?
+
+**Decisão:** se estiver mais de 5% acima da meta, recalculamos só com os dias de operação normal (20 h ou mais trabalhadas). Se ainda estiver acima, abrimos investigação na preparação e na extração, os maiores consumidores. Se o excesso sumir sem os dias de partida, o problema é o número de paradas, não a eficiência.
+
+**Dados:** `fato_producao` (`energia_kwh`, `soja_esmagada_t`, `horas_trabalhadas`, `data`).
