@@ -330,3 +330,42 @@ E-mail ao gerente industrial:
 **Decisão:** se estiver mais de 5% acima da meta, recalculamos só com os dias de operação normal (20 h ou mais trabalhadas). Se ainda estiver acima, abrimos investigação na preparação e na extração, os maiores consumidores. Se o excesso sumir sem os dias de partida, o problema é o número de paradas, não a eficiência.
 
 **Dados:** `fato_producao` (`energia_kwh`, `soja_esmagada_t`, `horas_trabalhadas`, `data`).
+
+## Tópico 8: O papel do analista
+
+**Teoria**
+
+| Função | Pergunta que responde | Entrega típica |
+|---|---|---|
+| Analista de Dados | O que aconteceu, por quê e o que fazer? | Análises, indicadores, recomendações |
+| Analista de BI | Como acompanhar isso todo dia? | Painéis, modelos de dados, relatórios automáticos |
+| Analista de Negócio | O que a área precisa e como o sistema deve atender? | Requisitos, processos mapeados |
+| Cientista de Dados | O que vai acontecer? | Modelos preditivos |
+| Engenheiro de Dados | Como o dado chega limpo e no lugar certo? | Pipelines, bancos, integrações |
+
+No Brasil os nomes se misturam: ler as atividades, não o título. Meu perfil fica entre Analista de Dados e de BI, com um pé em Analista de Negócio (SAP e PCP).
+
+### Prática: 10 vagas lidas em 29/10/2026
+
+Vagas: Infotech, Tecban, Grupo BTZ, Atlantic Solutions, BIP Brasil (dados e BI); LDC (supply chain regulatório, não é vaga de dados), Grupo Impper (performance operacional), G5 IT (BI com Qlik), Mercado Livre (gestão de fornecedores), COFCO (melhoria contínua).
+
+| # | Competência | Vagas | Tenho com confiança? | Onde entra no roteiro |
+|---|---|---|---|---|
+| 1 | Excel (avançado ou Pacote Office) | 7 | Sim | Fase 2 aprofunda |
+| 2 | Power BI | 6 | Não | Fase 4 (CP3) |
+| 3 | SQL | 6 | Não | Fase 3 (CP2) |
+| 4 | Indicadores de desempenho (KPIs) | 5 | Sim | |
+| 5 | Modelagem de dados | 4 | Não | Fases 3 e 4 (CP2 e CP3) |
+| 6 | Python | 4 (2 como diferencial) | Não | Fase 5 (CP4) |
+| 7 | Perfil e visão analítica | 4 | Sim | |
+| 8 | Dashboards e relatórios gerenciais | 4 | Não | Fase 4 (CP3) |
+| 9 | Qualidade e consistência de dados | 3 | Sim | |
+| 10 | Melhoria contínua e planos de ação | 3 | Sim | |
+
+**Conclusões**
+- Na busca, não apareceu nenhuma vaga com o título "Analista de Dados" no agro ou na indústria. Nesses setores, a vaga de dados vem com o nome da área (PCP, planejamento, supply chain, performance, melhoria contínua), pedindo Power BI e SQL nos requisitos.
+- SAP não apareceu como requisito em nenhuma das 10: é diferencial, não porta de entrada.
+- SQL e Power BI são obrigatórios; Python aparece mais como diferencial nas vagas de indústria e supply chain.
+- Engenharia é formação aceita em 5 das 10.
+- A vaga da COFCO (melhoria contínua com SQL/DBeaver, PDCA, DMAIC, KPIs) é praticamente o meu currículo: vagas híbridas como essa já posso disputar hoje.
+- Até o CP3 cubro 4 das 5 competências que faltam.
