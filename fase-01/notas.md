@@ -369,3 +369,17 @@ Vagas: Infotech, Tecban, Grupo BTZ, Atlantic Solutions, BIP Brasil (dados e BI);
 - Engenharia é formação aceita em 5 das 10.
 - A vaga da COFCO (melhoria contínua com SQL/DBeaver, PDCA, DMAIC, KPIs) é praticamente o meu currículo: vagas híbridas como essa já posso disputar hoje.
 - Até o CP3 cubro 4 das 5 competências que faltam.
+
+## Complemento: ficha de KPIs da esmagadora
+
+Planilha: `ficha_kpis_esmagadora.xlsx` (14 indicadores com definição, fórmula, unidade, sentido, fonte na fábrica, tabela da base, faixa típica e armadilha).
+
+**Por que a ficha existe:** indicador sem definição escrita vira discussão. Cada área calcula de um jeito e a reunião gasta tempo descobrindo por que os números não batem.
+
+**O que aprendi ao montar**
+- **Fórmula e fonte precisam contar a mesma história.** Soja esmagada não é estoque inicial − estoque final (isso ignora o recebimento); é a leitura da balança de fluxo, conferida por estoque inicial + recebido − estoque final.
+- **kW não é kWh.** kW é potência (instante); kWh é energia (acumulado). Consumo específico é kWh/t.
+- **Nem todo indicador é "quanto maior, melhor".** Rendimento de farelo, proteína, umidade e cobertura de estoque têm faixa ideal: passar do ponto também custa dinheiro.
+- **Cobertura de estoque ≠ estoque mínimo.** Cobertura é quantos dias a fábrica roda com a soja do silo; o mínimo é a reserva que não se usa.
+- **Regra de parada programada (disponibilidade):** entra só o que foi planejado para a fábrica parar de propósito: manutenção preventiva ou programada e a parada de entressafra prevista no plano anual. Não entram falta de matéria-prima, falta de espaço no armazém, queda de energia externa e falha da geração própria. Classificar falta de soja como programada esconde a maior perda do mês.
+- **Saber o que o dado não permite calcular também é resposta:** a base não tem data prometida nem quantidade pedida, então o OTIF não pode ser calculado com ela.
