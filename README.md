@@ -8,8 +8,8 @@ Aqui ficam anotações, exercícios e rascunhos do dia a dia. Os projetos finali
 
 | Fase | Tema | Status |
 |---|---|---|
-| 1 | Fundamentos da análise de dados | Em andamento |
-| 2 | Excel e Power Query | |
+| 1 | Fundamentos da análise de dados | Concluída (out/2026) |
+| 2 | Excel e Power Query | Em andamento |
 | 3 | SQL (PostgreSQL) | |
 | 4 | Power BI | |
 | 5 | Python para dados | |
