@@ -1,5 +1,6 @@
 # Dados reais e documentos de ex-empregador: guarde fora do repositório ou nesta pasta
 confidencial/
+dados/
 
 # Credenciais
 .env
