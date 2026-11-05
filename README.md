@@ -25,3 +25,7 @@ Aqui ficam anotações, exercícios e rascunhos do dia a dia. Os projetos finali
 ## Organização
 
 Uma pasta por fase (`fase-01/`, `fase-02/`...), com `notas.md` (teoria nas minhas palavras) e os exercícios práticos.
+
+Na pasta `extras/` ficam estudos fora do roadmap, feitos para treinar com dado real:
+
+- [Gastos do governo federal com viagens (2023 a 2026)](extras/viagens-governo/): quase 2,9 milhões de viagens analisadas em Python, com dashboard no Power BI.
