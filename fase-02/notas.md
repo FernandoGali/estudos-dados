@@ -156,3 +156,66 @@ O `SEERRO` esconde qualquer erro, não só o que eu esperava. No teste, digitei 
 - [ ] Trazer o tipo da parada (programada ou não) da `fato_paradas` em vez de deduzir pelas horas (Tópico 3, PROCX).
 - [ ] Confirmar onde se concentram os 174 alertas: dias de partida/parada? 2022 e 2023, com índice perto de 1,5? (Tópico 11, tabela dinâmica)
 - [ ] Definir os limites de alerta por período, como a meta.
+
+---
+
+## Tópico 3: PROCV, PROCX e ÍNDICE+CORRESP (06/11/2026)
+
+Tabelas renomeadas: `tbParadas`, `dimMotivo`, `dimEquipamento`, `tbRecebimento`, `dimFornecedor`. Abas novas: `t03_procura` e `t03_faixas`.
+
+### Teoria
+
+- **PROCV:** `=PROCV(valor;tabela;nº da coluna;FALSO)`. Procura só na 1ª coluna, devolve só para a direita, aponta a coluna pelo número e é aproximado por padrão (sem o `FALSO`, devolve um valor parecido em vez de erro).
+- **PROCX:** `=PROCX(valor;coluna onde procurar;coluna a devolver;[se não encontrar];[modo])`. Procura para qualquer lado, aponta a coluna pelo nome, é exato por padrão e tem o 4º argumento para o "não encontrado".
+- **ÍNDICE + CORRESP:** `=ÍNDICE(coluna a devolver;CORRESP(valor;coluna onde procurar;0))`. O CORRESP diz a posição; o ÍNDICE pega o que está nessa posição. Funciona em qualquer versão do Excel. Sem o `0` no CORRESP, a busca é aproximada e pode devolver posição errada sem aviso.
+- **Exata ou aproximada:** exata para códigos e IDs; aproximada para faixas. No PROCX, modo `-1` = "exato ou o próximo menor".
+- **Referência estruturada funciona de qualquer aba:** `dimEquipamento[tag]` lê a coluna da Tabela onde ela estiver.
+- **O que o PROCX devolve:** `#N/D` quando não encontra; `0` quando encontra, mas a célula de retorno está vazia.
+
+### Prática
+
+| Exercício | Fórmula | Conferência |
+|---|---|---|
+| Tipo da parada (PROCV) | `=PROCV([@id_motivo];dimMotivo;3;FALSO)` | 465 planejadas, 605 não planejadas |
+| Tipo da parada (PROCX) | `=PROCX([@id_motivo];dimMotivo[id_motivo];dimMotivo[tipo])` | igual ao PROCV (0 diferenças) |
+| Tipo da parada (ÍNDICE) | `=ÍNDICE(dimMotivo[tipo];CORRESP([@id_motivo];dimMotivo[id_motivo];0))` | igual ao PROCX (0 diferenças) |
+| Tag do equipamento | `=PROCX([@id_equipamento];dimEquipamento[id_equipamento];dimEquipamento[tag];"sem equipamento")` | 382 paradas sem equipamento |
+| Procura para a esquerda (tag → id) | `=ÍNDICE(dimEquipamento[id_equipamento];CORRESP(B2;dimEquipamento[tag];0))` | RSC-01 = 15; PROCV dá `#N/D` |
+| Região do fornecedor | `=PROCX([@id_fornecedor];dimFornecedor[id_fornecedor];dimFornecedor[regiao];"sem fornecedor")` | 0 cargas sem fornecedor |
+| Faixa de umidade | `=PROCX([@umidade_pct];tbFaixaUmidade[limite_inferior];tbFaixaUmidade[faixa];"sem umidade";-1)` | 46.406 / 3.977 / 351 / 9 = 50.743 |
+| Houve parada planejada no dia? | `=SE(CONT.SES(tbParadas[data];[@data];tbParadas[tipo_procx];"Planejada")>0;"sim";"não")` | 455 dias |
+
+**A armadilha do PROCV (T3-P2):** inseri uma coluna entre `motivo` e `tipo` na `dimMotivo`. O PROCV passou a mostrar 0 nas 1.070 paradas, sem nenhum erro aparente; PROCX e ÍNDICE continuaram certos.
+
+**Leitura da umidade:** 91,4% das cargas chegam até 14% (a referência de comercialização); 8,6% (4.337 cargas) chegam acima e geram desconto; 9 cargas acima de 18%. A regra das faixas fica numa Tabela, e não dentro da fórmula: se a política mudar, muda a tabela e as contagens se refazem sozinhas.
+
+Erros que cometi no caminho:
+- Comparei três colunas de uma vez (`A<>B<>C`). O Excel compara da esquerda para a direita: `A<>B` vira FALSO, e `FALSO<>"texto"` é sempre VERDADEIRO. Resultado: 1.070 "diferenças". Comparar duas por vez.
+- No ÍNDICE+CORRESP, usei a célula da tag como coluna de retorno, procurei na coluna errada e esqueci o `0` do CORRESP.
+- Escrevi a contagem final dentro da Tabela e ela virou uma coluna com o mesmo número em todas as linhas. Conferência fica fora da Tabela.
+
+### Aprendizados
+
+- **Dado ausente nem sempre é dado faltando.** As 382 paradas sem equipamento são falta de matéria-prima, entressafra, preventiva e energia externa: motivos que não dependem de máquina. O vazio é esperado; seria falha se aparecesse uma "quebra de eixo" sem equipamento.
+- **Separar base, cálculo e apresentação.** A aba de recebimento tinha um bloco de total e média escrito embaixo dos dados, fora da Tabela. Isso trava o crescimento da Tabela e confunde quem lê (e confundiu a conferência). Resumo fica em outra aba, calculado a partir da Tabela.
+- **Granularidade:** é o que cada linha representa. `tbParadas` = uma linha por parada; `tbProducao` = uma linha por dia. PROCX serve para muitos para um (parada → motivo). Quando um dia tem várias paradas, a pergunta certa é "houve?", respondida contando.
+
+### Perguntas
+
+**1. Por que evitar PROCV numa planilha que outras pessoas vão manter?**
+
+O PROCV aponta para a coluna pelo número, e não pelo nome. Se alguém insere ou apaga uma coluna na tabela de cadastro, ele passa a buscar outra coluna sem dar erro. No meu teste, inseri uma coluna e as 1.070 paradas passaram a mostrar 0, sem nenhum aviso. O PROCX aponta pelo nome da coluna e continua certo. Por isso, em planilha que outras pessoas mantêm, uso PROCX.
+
+**2. Quando o PROCX não encontra o valor, o que acontece? Por que o 4º argumento é melhor que o SEERRO?**
+
+Quando não encontra, o PROCX devolve `#N/D`. Com o 4º argumento, eu defino o que aparece nesse caso, como "sem equipamento" nas 382 paradas que não dependem de máquina. A vantagem sobre o `SEERRO` é que ele trata só o caso de não encontrar: se aparecer outro erro, como um dado digitado errado, ele continua visível para alguém corrigir. O `SEERRO` esconderia tudo do mesmo jeito.
+
+**3. Por que o PROCX pela data deu resposta errada? O que é granularidade?**
+
+Granularidade é o que cada linha de uma tabela representa. Na `tbParadas`, cada linha é uma parada; na `tbProducao`, cada linha é um dia. Quando um dia tem mais de uma parada, o PROCX pela data devolve só a primeira que encontra. No dia 05/11/2022, ele mostrou "Não planejada", mas o dia também teve uma parada planejada: a resposta não está errada, está incompleta. Isso acontece em 87 dias. A pergunta certa nesse caso é "houve parada planejada?", e ela se responde contando com `CONT.SES`.
+
+### Pendências para o CP1
+
+- [ ] Ver se as cargas acima de 14% de umidade se concentram em algum fornecedor ou região (Tópico 11, tabela dinâmica).
+- [ ] No boletim, usar "houve parada planejada?" (contagem) e não o PROCX pela data.
+- [ ] Apagar o bloco de resumo que estava embaixo dos dados de recebimento.
