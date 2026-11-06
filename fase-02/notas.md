@@ -219,3 +219,84 @@ Granularidade é o que cada linha de uma tabela representa. Na `tbParadas`, cada
 - [ ] Ver se as cargas acima de 14% de umidade se concentram em algum fornecedor ou região (Tópico 11, tabela dinâmica).
 - [ ] No boletim, usar "houve parada planejada?" (contagem) e não o PROCX pela data.
 - [ ] Apagar o bloco de resumo que estava embaixo dos dados de recebimento.
+
+---
+
+## Tópico 4: Funções de data (06/11/2026)
+
+Tabela renomeada: `dimCalendario`. Aba nova: `t04_datas`.
+
+### Teoria
+
+- **Data é número:** o Excel guarda cada data como a quantidade de dias desde 1900 (01/01/2022 = 44.562). O formato é só a aparência. Por isso dá para subtrair (dias entre duas datas) e somar (data + 7 = uma semana depois). De 01/01 a 10/01, a subtração dá 9; para contar os dois dias, somar 1.
+- **ANO, MÊS, DIA:** extraem as partes da data.
+- **NÚMSEMANA(data):** semana começa no domingo; semana 1 é a do dia 1º de janeiro.
+- **NÚMSEMANA(data;21):** padrão ISO; semana começa na segunda; semana 1 é a da primeira quinta-feira do ano. Toda semana ISO tem 7 dias completos.
+- **FIMMÊS(data;0):** último dia do mês. `DIA(FIMMÊS(data;0))` = dias no mês.
+- **DIATRABALHO(início;dias;[feriados]):** data depois de N dias úteis. Pula sábado, domingo e os feriados da lista. Começa a contar no dia seguinte ao início.
+- **HOJE():** muda sozinho a cada abertura do arquivo. Não usar em base histórica nem em boletim de dia escolhido.
+
+### Prática (colunas novas na `tbProducao`)
+
+| Coluna | Fórmula |
+|---|---|
+| `ano` | `=ANO([@data])` |
+| `mes` | `=MÊS([@data])` |
+| `semana_excel` | `=NÚMSEMANA([@data])` |
+| `semana_iso` | `=NÚMSEMANA([@data];21)` |
+| `dias_no_mes` | `=DIA(FIMMÊS([@data];0))` |
+| `semana_iso_cal` | PROCX da `semana_iso` da `dimCalendario` pela data |
+| `periodo` | `=SE(E([@mes]>=2;[@mes]<=7);"Safra";"Entressafra")` |
+| `periodo_cal` | PROCX do `periodo` da `dimCalendario` pela data |
+| `ultima_falha_mec` | `=MÁXIMOSES(tbParadas[data];tbParadas[id_motivo];2;tbParadas[data];"<="&[@data])` |
+| `dias_sem_falha_mec` | `=SE([@ultima_falha_mec]=0;"sem histórico";[@data]-[@ultima_falha_mec])` |
+| `dias_operacao_sem_falha` | `=CONT.SES(tbProducao[data];">"&[@ultima_falha_mec];tbProducao[data];"<="&[@data];tbProducao[status_dia];"<>Parado")` |
+
+Conferências:
+- 01/01/2022 (sábado): semana Excel 1, semana ISO 52. 03/01/2022 (segunda): ISO 1.
+- `semana_iso` × `dimCalendario`: 0 diferenças. `periodo` × `dimCalendario`: 0 diferenças.
+- Safra (fevereiro a julho): 906 dias. Entressafra: 828 dias.
+- Dias sem falha mecânica: 01/01/2022 sem histórico; 10/01/2022 = 7; 15/06/2024 = 0; 30/09/2026 = 16. Maior intervalo: 66 dias.
+- Dias úteis: pedido em 20/11/2026 com 10 dias úteis = entrega em 04/12/2026. Os feriados da lista (20/11 e 25/12) não mudaram o prazo: o 20/11 é o próprio dia do pedido e o 25/12 fica depois da entrega. Feriado só muda o prazo se cair dentro do período.
+
+**O indicador que mentia:**
+
+| Dia | Dias corridos sem falha | Dias de operação sem falha |
+|---|---|---|
+| 22/01/2025 | 66 (o "recorde") | 16 |
+| 30/09/2026 | 16 | 5 |
+
+Os maiores intervalos de dias corridos caem todos na entressafra de 2024/2025, com a fábrica parada boa parte do tempo. Fábrica parada não quebra. O maior intervalo de operação real sem falha mecânica foi de 30 dias, em 21/02/2023, no meio da safra.
+
+Erros que cometi no caminho:
+- A coluna nova herdou o formato de data da vizinha, e o ano 2022 apareceu como 14/07/1905. O cálculo estava certo; era só o formato.
+- Nos primeiros dias da base, sem falha anterior, o MÁXIMOSES devolveu 0 e a subtração virou a própria data em número (44.562 dias).
+- Montei o SE com a subtração no lugar do teste. O teste tem de ser uma pergunta de sim ou não: `[@ultima_falha_mec]=0`.
+- A lista de feriados tinha uma linha vazia no meio, e o intervalo da fórmula deixava o Natal de fora.
+- Tentei o CONT.SES fora da Tabela e na linha do cabeçalho: `[@...]` só funciona numa linha de dados da Tabela.
+
+### Aprendizados
+
+- **Indicador de calendário em fábrica que opera em campanha engana.** "Dias sem falha" e "dias sem acidente" contam o calendário, e não a exposição ao risco. Se a máquina não girou, ela não quebrou. Fábrica parada não é motivo para comemorar número de manutenção ou de segurança: fábrica parada é caixa parado. A métrica formal de manutenção é o MTBF, em horas trabalhadas.
+- **Quando calculo algo que já existe na fonte, confiro um contra o outro.** A semana ISO e o período de safra bateram com a `dimCalendario` em todos os dias.
+
+### Perguntas
+
+**1. Por que dá para subtrair uma data de outra no Excel?**
+
+O Excel guarda cada data como um número, a quantidade de dias desde 1900: 01/01/2022 é o 44.562. Por isso dá para subtrair, e o resultado é o número de dias entre as duas datas. De 01/01 a 10/01, dá 9; se eu quiser contar os dois dias, somo 1. Foi assim que calculei os dias sem falha mecânica.
+
+**2. Por que a semana de 01/01/2022 deu 1 numa fórmula e 52 na outra? Qual usar?**
+
+A semana do Excel começa no domingo, e a semana 1 é a do dia 1º de janeiro. A ISO começa na segunda, e a semana 1 é a da primeira quinta-feira do ano. Por isso o 01/01/2022, um sábado, ficou na semana 1 numa e na 52 de 2021 na outra. Num relatório de produção, uso a ISO: toda semana tem 7 dias completos, então as semanas são comparáveis entre si. Na contagem do Excel, a semana 1 de 2022 teve um dia só. Mas o mais importante é seguir o padrão da empresa e deixar escrito no relatório qual é.
+
+**3. Por que não usar HOJE() numa base histórica ou num boletim de dia escolhido?**
+
+O `HOJE()` se atualiza toda vez que o arquivo abre. Se o boletim do dia 05/11 usa `HOJE()`, ao ser aberto no dia 06 ele passa a mostrar o dia 06. Não dá para refazer o boletim de um dia passado, e um cálculo como "dias sem falha" muda de valor sem ninguém mexer. Por isso, no boletim, a data fica numa célula que a pessoa escolhe, e todas as fórmulas leem dessa célula.
+
+### Pendências para o CP1
+
+- [ ] Esmagamento por semana ISO e por mês (Tópico 9, SOMASES).
+- [ ] No boletim, usar dias de operação sem falha (ou MTBF em horas trabalhadas), e não dias corridos.
+- [ ] Data do boletim numa célula de entrada, nunca `HOJE()`.
+- [ ] Lista de feriados como Tabela (`tbFeriados`), para crescer sozinha.
