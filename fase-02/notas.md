@@ -300,3 +300,88 @@ O `HOJE()` se atualiza toda vez que o arquivo abre. Se o boletim do dia 05/11 us
 - [ ] No boletim, usar dias de operação sem falha (ou MTBF em horas trabalhadas), e não dias corridos.
 - [ ] Data do boletim numa célula de entrada, nunca `HOJE()`.
 - [ ] Lista de feriados como Tabela (`tbFeriados`), para crescer sozinha.
+
+---
+
+## Tópico 5: SUBSTITUIR, ESQUERDA, DIREITA e companhia (09/11/2026)
+
+Tudo na `tbParadas`. Objetivo: separar a tag do equipamento do texto da descrição ("Quebra de eixo RSC-01").
+
+### Teoria
+
+| Função | O que faz | Exemplo com "Quebra de eixo RSC-01" |
+|---|---|---|
+| `NÚM.CARACT(texto)` | quantos caracteres o texto tem | 21 |
+| `ESQUERDA(texto;n)` | os n primeiros caracteres | `ESQUERDA(A2;14)` = "Quebra de eixo" |
+| `DIREITA(texto;n)` | os n últimos caracteres | `DIREITA(A2;6)` = "RSC-01" |
+| `EXT.TEXTO(texto;início;n)` | n caracteres a partir de uma posição | |
+| `LOCALIZAR(procurado;texto)` | posição do trecho (ignora maiúsculas); `#VALOR!` se não achar | `LOCALIZAR("-";A2)` = 19 |
+| `SUBSTITUIR(texto;antigo;novo;[nº])` | troca pelo conteúdo; o 4º argumento escolhe a ocorrência | `SUBSTITUIR(A2;"-";"")` |
+| `MUDAR(texto;início;n;novo)` | troca pela posição | `MUDAR(A2;19;1;"")` |
+| `TEXTODEPOIS(texto;delim;[nº])` | o que vem depois do delimitador; `-1` = o último | `TEXTODEPOIS(A2;" ";-1)` = "RSC-01" |
+| `TEXTOANTES(texto;delim;[nº])` | o que vem antes do delimitador | `TEXTOANTES(A2;" ";-1)` = "Quebra de eixo" |
+
+- **"Contém?" no Excel:** `ÉNÚM(LOCALIZAR("-";texto))`. O LOCALIZAR devolve uma posição ou um erro; o ÉNÚM transforma em VERDADEIRO ou FALSO para o SE.
+- **`""` não é `" "`:** vazio é célula sem nada; espaço é um caractere invisível que conta como preenchido.
+- **Operadores de comparação:** `=` igual, `<>` diferente, `>` maior, `<` menor, `>=` maior ou igual, `<=` menor ou igual. Numa fórmula de lista, `*` funciona como E.
+- **Moldes:** palavras em minúsculas com sublinhado (`quantos_caracteres`) são lacunas a preencher, não texto para copiar.
+
+### Prática (colunas novas na `tbParadas`)
+
+| Coluna | Fórmula | Resultado |
+|---|---|---|
+| `tag_direita` | `=DIREITA([@descricao];6)` | falha: " DT-01" (6 caracteres, com espaço) e " de MP" |
+| `ultima_palavra` | `=TEXTODEPOIS([@descricao];" ";-1)` | "DT-01" (5 caracteres), "MP" |
+| `tag_texto` | `=SE(ÉNÚM(LOCALIZAR("-";[@ultima_palavra]));[@ultima_palavra];"")` | 570 tags |
+| `descricao_limpa` | `=SE([@[tag_texto]]="";[@descricao];ESQUERDA([@descricao];NÚM.CARACT([@descricao])-NÚM.CARACT([@[tag_texto]])-1))` | "Quebra de eixo" |
+| `ultima_palavra_classica` | `=DIREITA([@descricao];NÚM.CARACT([@descricao])-LOCALIZAR("#";SUBSTITUIR([@descricao];" ";"#";NÚM.CARACT([@descricao])-NÚM.CARACT(SUBSTITUIR([@descricao];" ";"")))))` | igual à `ultima_palavra` |
+| `tag_sem_hifen_sub` | `=SUBSTITUIR([@tag_texto];"-";"")` | "RSC01" |
+| `tag_sem_hifen_mudar` | `=SE([@[tag_texto]]="";"";MUDAR([@[tag_texto]];LOCALIZAR("-";[@[tag_texto]]);1;""))` | igual à de cima |
+
+**A fórmula clássica do último espaço, passo a passo** ("Quebra de eixo RSC-01", 21 caracteres):
+1. Texto sem espaços: 18 caracteres. 21 − 18 = 3 espaços.
+2. `SUBSTITUIR(texto;" ";"#";3)` troca só o 3º espaço, o último: "Quebra de eixo#RSC-01".
+3. `LOCALIZAR("#";...)` = 15, a posição do último espaço.
+4. `DIREITA(texto;21−15)` = "RSC-01".
+
+Mais simples no Excel 365: `TEXTODEPOIS` e `TEXTOANTES`. A clássica serve para Excel antigo.
+
+**Conferência com a fonte:**
+
+| Verificação | Resultado |
+|---|---|
+| Paradas com tag na descrição | 570 |
+| Paradas sem tag na descrição | 500 |
+| Diferenças entre a tag do texto e a do cadastro, onde há tag no texto | 0 |
+| Paradas com equipamento no cadastro e sem tag no texto | 118 |
+
+As 118 são armazém de farelo cheio (83), queda de energia da concessionária (24, registrada na subestação SUB-01) e inspeção de segurança (11, no extrator EXT-01). A causa não é o equipamento, mas o cadastro registra onde a parada aconteceu. Usando só a descrição, essas 118 paradas ficariam sem equipamento.
+
+Erros que cometi no caminho:
+- Copiei o molde com as lacunas (`TEXTO`, `quantos_caracteres`) e deu `#VALOR!`. Separei a conta numa coluna temporária, achei o 14 e encaixei no lugar da lacuna.
+- No MUDAR, fechei o parêntese do LOCALIZAR depois do `;1`: o 1 virou "posição inicial da busca" e o MUDAR ficou só com 2 dos 4 argumentos.
+
+### Aprendizados
+
+- **Extrair por tamanho fixo quebra.** Tag de 5 caracteres sai com espaço invisível; descrição sem tag vira lixo. Cortar por delimitador (último espaço) e validar o resultado (tem hífen?).
+- **Para achar onde uma fórmula longa quebra, separo as partes em colunas temporárias.**
+- **Campo estruturado é a fonte; texto livre é a conferência.** Onde os dois discordam, um está errado e precisa ser investigado.
+
+### Perguntas
+
+**1. Por que `DIREITA(descricao;6)` não serve para extrair a tag?**
+
+O `DIREITA(descricao;6)` supõe que toda tag tem 6 caracteres e que toda descrição termina com uma tag. As duas suposições falham. A tag DT-01 tem 5 caracteres, então ele pegou " DT-01" com um espaço na frente: na tela parece igual, mas tem 6 caracteres e não acharia o equipamento num PROCX. E "Falta de MP" não tem tag, então ele devolveu " de MP", um pedaço de texto sem sentido. O certo é cortar no último espaço, com `TEXTODEPOIS`, e só aceitar como tag a palavra que tem hífen.
+
+**2. Qual a diferença entre SUBSTITUIR e MUDAR?**
+
+O `SUBSTITUIR` troca pelo conteúdo: acha o hífen onde ele estiver, e troca todos, ou só uma ocorrência, com o 4º argumento. O `MUDAR` troca pela posição: precisa saber em que letra começar e quantas trocar. Para tirar o hífen da tag, uso o `SUBSTITUIR`, que é mais simples. Em "RSC-01-A", ele tira os dois hífens, e o `MUDAR` com `LOCALIZAR` tiraria só o primeiro. Uso o `MUDAR` quando a posição é a regra, como mascarar os caracteres 4 a 6 de um código.
+
+**3. Descrição ou cadastro: qual usar como fonte no boletim?**
+
+Uso o cadastro, o `id_equipamento`, como fonte, porque é um campo estruturado: só aceita um código que existe na lista de equipamentos. A descrição é texto livre, e cada pessoa escreve de um jeito. Nas 118 paradas de armazém cheio, queda de energia e inspeção, o texto nem cita o equipamento. Mas não jogo a descrição fora: uso como conferência. Cruzei as duas e elas concordaram nas 570 paradas em que o texto tem tag. Numa base nova, eu faria esse cruzamento antes de escolher a fonte. Onde as duas discordam, é sinal de que uma está errada e precisa ser investigada.
+
+### Pendências para o CP1
+
+- [ ] No boletim, equipamento da parada sempre pelo `id_equipamento` (cadastro), nunca pela descrição.
+- [ ] Apagar as colunas intermediárias de estudo (`tag_direita`, `ultima_palavra_classica`, `tag_sem_hifen_mudar`) quando montar o arquivo do CP1.
