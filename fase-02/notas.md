@@ -414,7 +414,7 @@ Tudo na aba `t06_fornecedores`, Table `tbAmostraFornecedor`: uma amostra de 6.94
 | `fornecedor` (original) | | 24 no Excel (37 diferenciando maiúsculas) |
 | `maiuscula` | `=MAIÚSCULA([@fornecedor])` | 24 |
 | `minuscula` | `=MINÚSCULA([@fornecedor])` | 24 |
-| `pri_maiuscula` | `=PRI.MAIÚSCULA([@fornecedor])` | 24 |
+| `primeira_maiuscula` | `=PRI.MAIÚSCULA([@fornecedor])` | 24 |
 | `arrumado` | `=ARRUMAR(MAIÚSCULA([@fornecedor]))` | 10 |
 | `padronizado` | `=SUBSTITUIR(SUBSTITUIR(SUBSTITUIR([@arrumado];"COOP. ";"COOPERATIVA ");"FAZ. ";"FAZENDA ");"AGRICOLA";"AGRÍCOLA")` | 6 |
 | `final` | `=SUBSTITUIR([@padronizado];"SAO";"SÃO")` | 5 |
@@ -461,3 +461,102 @@ Nos relatórios não tínhamos muito dado no nível de equipamento, mas no siste
 
 - [ ] No boletim, nome do fornecedor sempre da `dimFornecedor`, pelo `cod_fornecedor`, nunca do texto digitado na carga.
 - [ ] Na limpeza da base completa (Fase 7), padronizar com tabela de-para no Power Query, não com SUBSTITUIR encadeado.
+
+---
+
+## Tópico 7: &, CONCAT, UNIRTEXTO e TEXTO (10/11/2026)
+
+Chaves compostas na `tbParadas`; lista de paradas do dia e frase automática do boletim na `tbProducao`.
+
+### Teoria
+
+| Função | O que faz | Exemplo |
+|---|---|---|
+| `&` | junta dois pedaços de texto | `="F0072"&"\|"&"FAZENDA"` = "F0072\|FAZENDA" |
+| `CONCAT(texto1;...)` | junta textos ou um intervalo inteiro, sem separador | `CONCAT(A2:C2)` |
+| `CONCATENAR` | versão antiga, não aceita intervalo | não uso |
+| `UNIRTEXTO(delim;ignorar_vazio;texto)` | junta uma lista com separador | `UNIRTEXTO("; ";VERDADEIRO;A2:A5)` |
+| `TEXTO(valor;"formato")` | formata número ou data dentro de um texto | `TEXTO(44562;"dd/mm/aaaa")` = "01/01/2022" |
+
+Formatos do TEXTO que mais uso: `"dd/mm/aaaa"` (data), `"mmm/aa"` (jan/22), `"#.##0"` (1.405), `"0,00"` (1,29), `"0,0%"` (28,5%). Se o Excel estiver com formato regional em inglês, a data vira `"dd/mm/yyyy"`.
+
+- **Data sem TEXTO vira número:** `=[@data]&"|"&[@turno]` mostra "44564|<turno>".
+- **TEXTO devolve texto:** serve para apresentar, não para calcular. A coluna original continua sendo a que entra nas contas.
+- **Chave composta precisa ser testada:** `LINS(tabela[id])` contra `CONT.VALORES(ÚNICO(chave))`. Se os números forem diferentes, a chave repete.
+- **Curingas no CONT.SE:** `*` = qualquer texto; `?` = um caractere qualquer. `"*acima*"` = contém "acima"; `"?*"` = tem pelo menos 1 caractere.
+
+### Prática
+
+**Chaves na `tbParadas`:**
+
+| Coluna | Fórmula | Distintos (de 1.070 paradas) |
+|---|---|---|
+| `chave_bruta` | `=[@data]&"\|"&[@turno]` | data aparece como número |
+| `chave_turno` | `=TEXTO([@data];"dd/mm/aaaa")&"\|"&[@turno]` | 992: 78 paradas repetem data e turno |
+| `chave_hora` | `=TEXTO([@data];"dd/mm/aaaa")&"\|"&[@hora_inicio]` | 1.070: única nesta base |
+
+Data + hora é única aqui, mas nada garante que duas paradas não comecem no mesmo minuto amanhã. A chave de verdade é o `id_parada`, gerado pelo sistema. Chave composta é para quando a base não tem id.
+
+**Paradas do dia na `tbProducao`:**
+
+| Coluna | Fórmula |
+|---|---|
+| `paradas_do_dia` | `=UNIRTEXTO("; ";VERDADEIRO;FILTRO(tbParadas[descricao_limpa];tbParadas[data]=[@data];""))` |
+| `motivo_dia` | `=UNIRTEXTO("; ";VERDADEIRO;ÚNICO(FILTRO(tbParadas[descricao_limpa];tbParadas[data]=[@data];"")))` |
+
+Em 07/10/2024, o dia com mais paradas da base:
+- `paradas_do_dia`: Excesso de umidade na massa; Quebra de corrente; Troca de rolamento; Troca de rolamento; Quebra de corrente (5 paradas)
+- `motivo_dia`: Excesso de umidade na massa; Quebra de corrente; Troca de rolamento (3 motivos)
+
+A primeira mostra a repetição (rolamento e corrente duas vezes no mesmo dia, sinal para investigar). A segunda é mais limpa para o boletim, mas esconde isso.
+
+**Frase do dia na `tbProducao`, montada por partes:**
+
+| Coluna | Fórmula | 01/01/2022 |
+|---|---|---|
+| `txt_data` | `=TEXTO([@data];"dd/mm/aaaa")` | 01/01/2022 |
+| `txt_soja` | `=TEXTO([@soja_esmagada_t];"#.##0")` | 1.405 |
+| `txt_hexano` | `=TEXTO([@indice_hexano_l];"0,00")` | 1,29 |
+| `txt_desvio` | `=TEXTO(ABS([@indice_hexano_l]/meta_hexano-1);"0,0%")` | 28,5% |
+| `txt_sentido` | `=SE([@indice_hexano_l]>meta_hexano;"acima";"abaixo")` | acima |
+| `frase_dia` | `=SE([@status_dia]="Parado";"Em "&[@txt_data]&" a planta ficou parada.";"Em "&[@txt_data]&" a planta esmagou "&[@txt_soja]&" t de soja, com "&[@txt_hexano]&" L/t de hexano, "&[@txt_desvio]&" "&[@txt_sentido]&" da meta.")` | Em 01/01/2022 a planta esmagou 1.405 t de soja, com 1,29 L/t de hexano, 28,5% acima da meta. |
+
+No dia parado, sem o SE, a frase deu `#DIV/0!`: soja esmagada 0 → o índice de hexano divide por zero → o erro passa para as colunas `txt_` e para a frase. O SE resolve porque o Excel só calcula o lado escolhido. O erro continua nas colunas `txt_` desses dias, mas elas são passos intermediários. Tratei o caso conhecido com SE em vez de esconder tudo com SEERRO.
+
+**Conferências:**
+
+| Verificação | Resultado |
+|---|---|
+| Dias com texto na `paradas_do_dia` × dias distintos na `tbParadas` | 857 = 857 |
+| Frases "acima" + "abaixo" + "parada" | 871 + 508 + 355 = 1.734 dias |
+
+Os 355 parados batem com o `status_dia` do Tópico 2. A planta passou da meta de hexano em 871 dos 1.379 dias com produção (63%).
+
+Erro que cometi no caminho:
+- Contei os dias com `=CONT.SE(tbProducao[paradas_do_dia];"<>")` e deu 1.734, todos os dias. Uma fórmula que devolve `""` parece vazia, mas conta como preenchida. Troquei por `=CONT.SE(...;"?*")` ou `=SOMA(--(...<>""))`, e as duas deram 857.
+
+### Aprendizados
+
+- **Chave que eu invento, eu testo.** Data + turno parecia identificar a parada e repetiu 78 vezes.
+- **Célula que parece vazia pode ter fórmula.** Para contar preenchidas de verdade, uso `"?*"` ou `<>""`, não `"<>"`.
+- **Monto fórmula longa por partes.** As colunas `txt_` mostraram onde estava cada pedaço e onde o erro do dia parado nascia.
+- **Frase automática tem que prever o dia fora do normal.** Dia parado, dia parcial, meta sem dado: é aí que a frase quebra ou, pior, sai errada parecendo certa.
+
+### Perguntas
+
+**1. A chave data + turno repetiu. O que aconteceria num PROCX usando essa chave?**
+
+O PROCX devolve só a primeira linha que encontrar com aquela chave. Num turno com duas ou três paradas, ele traz a informação da primeira e ignora as outras, e não dá erro nenhum. Nesta base, isso deixaria 78 paradas de fora sem eu perceber. Antes de usar uma chave num PROCX, testo se ela é única: comparo o número de linhas com o número de chaves distintas. Se a chave repetir, ou uso uma que identifique a linha de verdade, como o `id_parada`, ou mudo a pergunta: em vez de buscar uma linha, agrego com CONT.SES, SOMASES ou UNIRTEXTO.
+
+**2. Por que as colunas `txt_` não servem para conta? Onde a frase seria útil no CP1?**
+
+Porque o TEXTO transforma o número em texto: "1.405" fica parecendo número, mas é texto. A SOMA ignora texto, então uma soma dessas colunas daria 0 ou um total errado, sem aviso. Para calcular, uso sempre a coluna original, e se quero que ela apareça formatada, mudo o formato da célula, não o valor. A frase serve para quem não vai ler a tabela: o resumo no topo do boletim diário ou o corpo de um e-mail para o gerente, dizendo em uma linha como foi o dia e se o hexano ficou dentro da meta.
+
+**3. Já viu um relatório automático dizer algo sem sentido? Em que situação?**
+
+Sim, principalmente quando alguém adicionava ou removia uma coluna da planilha. Uma fórmula perdia a referência e devolvia um erro ou um número totalmente incoerente. É o mesmo problema do PROCV com o número da coluna fixo, do Tópico 3: a estrutura muda e a fórmula continua apontando para o lugar antigo. Quando dá erro, pelo menos alguém vê. O pior é quando sai um número que parece normal. Por isso hoje eu uso Tables e referências por nome de coluna, e testo a frase justamente nos dias fora do padrão, como o dia parado, que nesta base deu `#DIV/0!` antes de eu tratar.
+
+### Pendências para o CP1
+
+- [ ] Frase do dia no topo do boletim, tratando também o dia parcial (`dia_parcial`), não só o parado.
+- [ ] Avaliar se a frase usa a meta mensal de hexano em vez de uma meta única.
