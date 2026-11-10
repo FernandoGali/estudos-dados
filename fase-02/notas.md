@@ -385,3 +385,79 @@ Uso o cadastro, o `id_equipamento`, como fonte, porque é um campo estruturado: 
 
 - [ ] No boletim, equipamento da parada sempre pelo `id_equipamento` (cadastro), nunca pela descrição.
 - [ ] Apagar as colunas intermediárias de estudo (`tag_direita`, `ultima_palavra_classica`, `tag_sem_hifen_mudar`) quando montar o arquivo do CP1.
+
+---
+
+## Tópico 6: MAIÚSCULA, MINÚSCULA e PRI.MAIÚSCULA (10/11/2026)
+
+Tudo na aba `t06_fornecedores`, Table `tbAmostraFornecedor`: uma amostra de 6.943 cargas de 5 fornecedores (5 `cod_fornecedor`), com o nome digitado de 37 jeitos diferentes. Objetivo: ver quanto as funções de texto conseguem padronizar e onde elas param.
+
+### Teoria
+
+| Função | O que faz | Exemplo com "grupo são pedro i" |
+|---|---|---|
+| `MAIÚSCULA(texto)` | tudo em maiúscula | "GRUPO SÃO PEDRO I" |
+| `MINÚSCULA(texto)` | tudo em minúscula | "grupo são pedro i" |
+| `PRI.MAIÚSCULA(texto)` | primeira letra de cada palavra em maiúscula | "Grupo São Pedro I" |
+| `EXATO(texto1;texto2)` | compara diferenciando maiúsculas | `EXATO("ABC";"abc")` = FALSO |
+| `ARRUMAR(texto)` | tira espaços do começo, do fim e duplos | " Faz.  Santa Luzia " → "Faz. Santa Luzia" |
+
+- **O Excel não diferencia maiúsculas:** `="ABC"="abc"` dá VERDADEIRO, e o mesmo vale para PROCX, CONT.SE, ÚNICO e tabela dinâmica. Para diferenciar, uso `EXATO`.
+- **Power Query, SQL (PostgreSQL) e pandas diferenciam.** O que o Excel agrupa em uma linha vira várias nessas ferramentas.
+- **PRI.MAIÚSCULA não conhece sigla nem número romano:** "GRUPO HORIZONTE II" vira "Grupo Horizonte Ii". Preposições também viram "De", "Da", "Do".
+- **Contar distintos:** `=CONT.VALORES(ÚNICO(coluna))`.
+
+### Prática (colunas novas na `tbAmostraFornecedor`)
+
+| Coluna | Fórmula | Nomes distintos |
+|---|---|---|
+| `fornecedor` (original) | | 24 no Excel (37 diferenciando maiúsculas) |
+| `maiuscula` | `=MAIÚSCULA([@fornecedor])` | 24 |
+| `minuscula` | `=MINÚSCULA([@fornecedor])` | 24 |
+| `pri_maiuscula` | `=PRI.MAIÚSCULA([@fornecedor])` | 24 |
+| `arrumado` | `=ARRUMAR(MAIÚSCULA([@fornecedor]))` | 10 |
+| `padronizado` | `=SUBSTITUIR(SUBSTITUIR(SUBSTITUIR([@arrumado];"COOP. ";"COOPERATIVA ");"FAZ. ";"FAZENDA ");"AGRICOLA";"AGRÍCOLA")` | 6 |
+| `final` | `=SUBSTITUIR([@padronizado];"SAO";"SÃO")` | 5 |
+
+O que cada etapa resolveu:
+- **Maiúsculas (24 → 24):** nada, porque o ÚNICO já ignorava a caixa das letras. Para o Excel, o problema nunca foi esse.
+- **Espaços (24 → 10):** " Fazenda Santa Luzia" e "Fazenda Santa Luzia" são nomes diferentes até para o Excel.
+- **Abreviação e acento (10 → 6 → 5):** "Coop.", "Faz.", "Agricola" e "Sao" só saíram com SUBSTITUIR, um caso de cada vez.
+
+**Conferência com o código:**
+
+| Verificação | Fórmula | Resultado |
+|---|---|---|
+| Códigos distintos | `=CONT.VALORES(ÚNICO(tbAmostraFornecedor[cod_fornecedor]))` | 5 |
+| Combinações código + nome | `=CONT.VALORES(ÚNICO(tbAmostraFornecedor[cod_fornecedor]&"\|"&tbAmostraFornecedor[final]))` | 5 |
+
+Combinação igual a 5 quer dizer que cada código tem um nome só e cada nome tem um código só. Sem esse teste, 5 nomes não provariam que cada carga ficou com o fornecedor certo.
+
+Erro que cometi no caminho:
+- Testei a combinação com o intervalo `[cod_fornecedor]:[final]` e deu 192. O intervalo pegou as 8 colunas entre as duas, e o ÚNICO devolveu as 24 combinações da coluna original. Como o CONT.VALORES conta células, e não linhas, deu 24 × 8 = 192. Para combinar só duas colunas, colo com `&`.
+
+### Aprendizados
+
+- **Padronizar texto ajuda, mas não resolve sozinho.** MAIÚSCULA e ARRUMAR resolvem o que é geral; abreviação e acento precisam de regra caso a caso, e cada variação nova pede um SUBSTITUIR novo.
+- **A chave é o código.** O nome que vai para o relatório vem do cadastro (`dimFornecedor`), escrito certo uma vez, puxado pelo `cod_fornecedor`.
+- **Com várias colunas, CONT.VALORES(ÚNICO()) conta células.** Para contar combinações, junto as colunas com `&` e um separador que não aparece nos dados.
+- **Com muitos casos, fórmula vira bagunça.** O jeito melhor é uma tabela de-para ("como está" → "como deveria ser"), que vou fazer no Power Query.
+
+### Perguntas
+
+**1. O Excel contou menos nomes do que existem. Quando isso engana, quando ajuda, e o que acontece no Power Query ou no SQL?**
+
+O Excel contou 24 nomes, e na verdade são 5 fornecedores. Se eu fizer um ranking de fornecedores pelo nome digitado, o mesmo fornecedor aparece dividido em vários nomes, cada um com só uma parte das cargas, e cai no ranking. O indicador fica errado sem dar erro nenhum. Por outro lado, o Excel ignorar maiúsculas ajuda no dia a dia: um PROCX acha "GRUPO DUAS PONTES" mesmo que o cadastro esteja como "Grupo Duas Pontes". No Power Query e no SQL é pior, porque eles diferenciam maiúsculas: a mesma coluna viraria 37 nomes em vez de 24. Uma análise que bate no Excel pode não bater quando eu levar para outra ferramenta.
+
+**2. A coluna `final` bateu com o código. Por que não usar ela como nome oficial?**
+
+Porque ela só corrige os casos que eu vi nesta amostra. Se amanhã alguém digitar "Faz Santa Luzia", sem o ponto, ou "Fazenda Sta Luzia", a fórmula não pega, e o fornecedor volta a se dividir. O nome também saiu todo em maiúscula, e a PRI.MAIÚSCULA estragaria o "II". O nome oficial vem da `dimFornecedor`, o cadastro de fornecedores, puxado pelo `cod_fornecedor` com um PROCX. O código é preenchido por seleção, não por digitação, então não varia. A coluna `final` serve para conferir, não para ser a fonte.
+
+**3. Já viu o mesmo item escrito de vários jeitos no trabalho? Como aparecia?**
+
+Nos relatórios não tínhamos muito dado no nível de equipamento, mas no sistema era comum. Quando eu buscava um item, era difícil saber qual era o certo, porque o mesmo item aparecia escrito de jeitos diferentes, às vezes com códigos diferentes. Isso gerava confusão e podia acabar na compra da peça errada. Hoje eu vejo que é o mesmo problema desta amostra: quando não existe um cadastro único, cada pessoa escreve de um jeito, e a busca, o relatório e a compra dependem de alguém adivinhar qual é o registro certo.
+
+### Pendências para o CP1
+
+- [ ] No boletim, nome do fornecedor sempre da `dimFornecedor`, pelo `cod_fornecedor`, nunca do texto digitado na carga.
+- [ ] Na limpeza da base completa (Fase 7), padronizar com tabela de-para no Power Query, não com SUBSTITUIR encadeado.
