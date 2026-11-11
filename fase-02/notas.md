@@ -560,3 +560,85 @@ Sim, principalmente quando alguém adicionava ou removia uma coluna da planilha.
 
 - [ ] Frase do dia no topo do boletim, tratando também o dia parcial (`dia_parcial`), não só o parado.
 - [ ] Avaliar se a frase usa a meta mensal de hexano em vez de uma meta única.
+
+---
+
+## Tópico 8: Espaços e caracteres invisíveis (11/11/2026)
+
+Tudo na aba `t08_portal`, Table `tbPortal`: 40 cargas copiadas do portal da balança e coladas no Excel. Na tela, os códigos parecem certos; o PROCX não acha 22 deles, e o peso não soma.
+
+### Teoria
+
+| código | o que é | de onde costuma vir | quem tira |
+|---|---|---|---|
+| `CARACT(32)` | espaço comum | digitação | `ARRUMAR` |
+| `CARACT(160)` | espaço não separável | site, HTML, export de sistema, e-mail | só `SUBSTITUIR(texto;CARACT(160);"")` |
+| `CARACT(9)` | tabulação | cópia de sistema ou de outro programa | `TIRAR` |
+| `CARACT(10)` | quebra de linha | Alt+Enter, texto colado com Enter | `TIRAR` |
+
+- **`TIRAR`** é o nome em português do CLEAN: remove os caracteres de controle, de 0 a 31. **`LIMPAR` não existe** e dá `#NOME?`.
+- **Para descobrir o invisível:** `NÚM.CARACT` mostra caracteres a mais; `CÓDIGO(DIREITA(texto;1))` e `CÓDIGO(ESQUERDA(texto;1))` mostram qual é o último e o primeiro.
+- **Texto que parece número:** fica alinhado à esquerda, às vezes com triângulo verde. A SOMA ignora, sem aviso. `VALOR` converte, mas falha com caractere estranho.
+
+### Prática
+
+**Códigos de fornecedor (PROCX contra a `dimFornecedor`):**
+
+| Coluna | Fórmula | Não encontrados |
+|---|---|---|
+| `fornecedor_bruto` | `=PROCX([@cod_fornecedor];dimFornecedor[cod_fornecedor];dimFornecedor[fornecedor];"não encontrou")` | 22 |
+| `cod_arrumar` | `=ARRUMAR([@cod_fornecedor])` | 17 |
+| `cod_limpar` | `=TIRAR(ARRUMAR([@cod_fornecedor]))` | 10 |
+| `cod_final` | `=ARRUMAR(TIRAR(SUBSTITUIR([@cod_fornecedor];CARACT(160);"")))` | 0 |
+
+**Investigação** (`tamanho`, `codigo_ultimo`, `codigo_primeiro`): 22 códigos com tamanho diferente de 5, os mesmos 22 não encontrados. Então o problema era só caractere invisível: nenhum código errado e nenhum fornecedor faltando no cadastro.
+
+| O que apareceu | Significado | Linhas |
+|---|---|---|
+| primeiro = 70 | letra F, começo normal | |
+| primeiro = 9 | tabulação antes do código | 4 |
+| último = 32 | espaço comum no fim | 5 |
+| último = 10 | quebra de linha no fim | 3 |
+| último = 160 | espaço não separável no fim | 8 |
+| tamanho 7, último = 160 | espaço comum + 160 | 2 |
+
+**Por que o ARRUMAR fica por fora:** em "F0046" + espaço + 160, o espaço comum não está no fim, porque o 160 vem depois. O ARRUMAR só consegue tirar esse espaço depois que o SUBSTITUIR remove o 160.
+
+**Peso:**
+
+| Verificação | Resultado |
+|---|---|
+| `=SOMA(tbPortal[peso_liquido_t])` (texto) | 0 |
+| Erros no `=VALOR([@peso_liquido_t])` | 6 (os pesos com 160) |
+| `peso_limpo`: `=VALOR(SUBSTITUIR([@peso_liquido_t];CARACT(160);""))`, erros | 0 |
+| Soma da `peso_limpo` | 1.512,92 t |
+| Soma da `peso_fonte`: `=PROCX([@id_ticket];tbRecebimento[id_ticket];tbRecebimento[peso_liquido_t])` | 1.512,92 t |
+| Linhas diferentes: `=SOMA(--(tbPortal[peso_limpo]<>tbPortal[peso_fonte]))` | 0 |
+
+A soma pode bater por coincidência (um peso a mais numa linha e a menos em outra). O teste linha a linha não deixa passar.
+
+### Aprendizados
+
+- **Fórmula para dado colado de site ou sistema:** `=ARRUMAR(TIRAR(SUBSTITUIR(texto;CARACT(160);"")))`. A ordem importa.
+- **Contar os não encontrados e os de tamanho errado separa os problemas.** 22 = 22 quer dizer só sujeira; se fossem diferentes, sobraria código errado ou cadastro faltando.
+- **Antes de corrigir, investigo.** O `CÓDIGO` disse qual caractere era, e cada etapa resolveu exatamente o que eu esperava.
+- **Conferi também se a limpeza deixou erro**, contando os erros na coluna corrigida, e não só a soma.
+
+### Perguntas
+
+**1. O PROCX não dá erro, só "não achou". O que te faria desconfiar? E se o 4º argumento fosse `0`?**
+
+Num relatório real, eu desconfiaria comparando totais: se todo ticket tem fornecedor, o número de "não achou" deveria ser zero, e a soma por fornecedor deveria bater com o total recebido. Aqui, 22 de 40 cargas ficariam sem dono. Com o 4º argumento como `0`, o problema fica escondido. Numa coluna de nome, ainda daria para estranhar um fornecedor "0". Mas numa coluna de número, como peso ou preço, o 0 parece um valor normal: o total do fornecedor ficaria menor, a média cairia, e ninguém veria erro nenhum. Por isso prefiro um texto como "não achou" no 4º argumento, que dá para contar e não entra em conta.
+
+**2. Por que a SOMA dar 0 é mais perigoso que um `#VALOR!`? Como conferir antes de somar?**
+
+Um `#VALOR!` chama atenção, alguém vai olhar. Um 0, ou um total menor do que deveria, parece resultado normal e segue para o relatório. A primeira pista é o alinhamento: número fica à direita, texto à esquerda. Mas mudar o formato da célula para número não converte o que já está lá como texto, e com um 160 no meio nem o VALOR resolve sozinho. Antes de somar, eu confiro se todas as linhas são número: `=CONT.NÚM(coluna)` tem que ser igual a `=LINS(coluna)`. E, quando existe uma fonte, comparo o total com ela, como fiz aqui com a `tbRecebimento`.
+
+**3. Já viu dado copiado não bater? Onde isso aconteceria no PCP?**
+
+Não lembro de um caso específico, mas vejo onde isso aconteceria: em dados de balança, de produção e em relatórios exportados de sistema, como o SAP, que muitas vezes chegam com número em formato de texto ou com espaço escondido. Se alguém muda um formato sem querer, ou cola um dado de outra fonte, a conta de recebimento ou de processamento sai errada sem dar erro, e o impacto aparece depois: no fechamento do mês, no estoque, no indicador por tonelada. Por isso, quando recebo um dado de fora, faço três conferências antes de usar: quantas linhas são número, quantos códigos acham par no cadastro e se o total bate com a fonte.
+
+### Pendências para o CP1
+
+- [ ] Toda coluna importada ou colada passa pela fórmula de limpeza antes de entrar no boletim.
+- [ ] Conferência padrão do boletim: `CONT.NÚM` = `LINS` nas colunas de número; "não achou" = 0 nos PROCX.
